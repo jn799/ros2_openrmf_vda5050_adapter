@@ -1,0 +1,32 @@
+# RMF VDA5050 Adapter Configuration
+
+mqtt:
+  host: "localhost"
+  port: 1883
+  username: ""
+  password: ""
+
+vda5050:
+  version: "v2"
+
+fleet:
+  name: "vda5050_fleet"
+  map_name: "L1"
+  # Path to the nav graph YAML.  Leave empty to use the package default
+  # (config/nav_graph.yaml).  Provide an absolute path to use a custom map.
+  nav_graph_file: ""
+
+robot:
+  radius: 0.3              # metres
+  mass: 20.0               # kg
+  linear_velocity: 0.5     # m/s
+  linear_acceleration: 0.3 # m/s²
+  angular_velocity: 0.6    # rad/s
+  angular_acceleration: 0.45
+
+battery:
+  voltage: 24.0            # V
+  capacity_ah: 40.0        # Ah
+  charging_current: 8.0    # A
+  recharge_threshold: 0.2  # recharge when SOC drops below 20%
+  recharge_soc: 1.0        # charge back to 100%

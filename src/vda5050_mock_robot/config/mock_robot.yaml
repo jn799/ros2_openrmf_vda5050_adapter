@@ -1,0 +1,24 @@
+# VDA5050 Mock Robot Configuration
+
+vda5050_mock_robot:
+  ros__parameters:
+
+    # MQTT broker (must match adapter config)
+    mqtt_host: "localhost"
+    mqtt_port: 1883
+    mqtt_username: ""
+    mqtt_password: ""
+
+    # Robot identity — matches VDA5050 topic pattern: uagv/v2/{manufacturer}/{serial}/...
+    manufacturer: "mock"
+    serial_number: "robot_01"
+    vda5050_version: "v2"
+
+    # Starting pose [x, y, theta_degrees]
+    start_x: 0.0
+    start_y: 0.0
+    start_theta: 0.0
+
+    # Simulated motion
+    linear_speed: 0.5       # m/s
+    state_publish_rate: 1.0 # Hz — how often to publish state back to adapter
