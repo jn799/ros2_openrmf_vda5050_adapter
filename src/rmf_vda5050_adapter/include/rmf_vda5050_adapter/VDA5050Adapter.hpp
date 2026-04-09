@@ -10,6 +10,7 @@
 #include <rmf_traffic/Profile.hpp>
 
 #include <rclcpp/rclcpp.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 #include <mosquitto.h>
 
 #include <memory>
@@ -91,6 +92,9 @@ private:
     const std::shared_ptr<RobotHandle>& handle,
     const nlohmann::json& payload);
 
+  void publish_robot_marker(
+    const std::shared_ptr<RobotState>& state, bool offline);
+
   // ---- Data ----------------------------------------------------------------
   Config _cfg;
   rclcpp::Logger _logger;
@@ -101,6 +105,9 @@ private:
 
   // MQTT
   struct mosquitto* _mqtt{nullptr};
+
+  // Offline robot markers
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr _marker_pub;
 
   // Robots
   std::mutex _robots_mutex;

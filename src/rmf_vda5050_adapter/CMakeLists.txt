@@ -18,6 +18,7 @@ find_package(Eigen3 REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(rmf_battery REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 add_executable(adapter
   src/main.cpp
@@ -39,6 +40,10 @@ target_link_libraries(adapter
   yaml-cpp
   mosquitto
   rmf_battery::rmf_battery
+)
+
+ament_target_dependencies(adapter
+  visualization_msgs
 )
 
 install(TARGETS adapter

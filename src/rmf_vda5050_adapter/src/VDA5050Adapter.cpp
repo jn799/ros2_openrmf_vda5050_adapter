@@ -26,6 +26,11 @@ VDA5050Adapter::VDA5050Adapter(const Config& config)
 {
   setup_rmf();
 
+  _marker_pub =
+    _adapter->node()->create_publisher<visualization_msgs::msg::MarkerArray>(
+      "/robot_offline_markers",
+      rclcpp::QoS(1).transient_local());
+
   // ---- MQTT ----------------------------------------------------------------
   mosquitto_lib_init();
   _mqtt = mosquitto_new(nullptr, true, this);
@@ -379,10 +384,81 @@ void VDA5050Adapter::handle_connection_msg(
 
   const std::string conn_state =
     payload.value("connectionState", std::string("OFFLINE"));
-  state->connected = (conn_state == "ONLINE");
+  const bool online = (conn_state == "ONLINE");
+  state->connected = online;
+
+  handle->set_online(online);
+  publish_robot_marker(state, !online);
 
   RCLCPP_INFO(_logger, "Robot %s connection: %s",
     state->robot_id.c_str(), conn_state.c_str());
+}
+
+void VDA5050Adapter::publish_robot_marker(
+  const std::shared_ptr<RobotState>& state, bool offline)
+{
+  visualization_msgs::msg::MarkerArray ma;
+  const auto now = _adapter->node()->now();
+
+  if (!offline)
+  {
+    // DELETE both markers so the overlay disappears
+    for (int id = 0; id < 2; ++id)
+    {
+      visualization_msgs::msg::Marker m;
+      m.header.frame_id = "map";
+      m.header.stamp    = now;
+      m.ns              = state->robot_id;
+      m.id              = id;
+      m.action          = visualization_msgs::msg::Marker::DELETE;
+      ma.markers.push_back(m);
+    }
+  }
+  else
+  {
+    // --- grey semi-transparent disc to replace the normal robot colour ---
+    visualization_msgs::msg::Marker disc;
+    disc.header.frame_id    = "map";
+    disc.header.stamp       = now;
+    disc.ns                 = state->robot_id;
+    disc.id                 = 0;
+    disc.type               = visualization_msgs::msg::Marker::CYLINDER;
+    disc.action             = visualization_msgs::msg::Marker::ADD;
+    disc.pose.position.x    = state->x;
+    disc.pose.position.y    = state->y;
+    disc.pose.position.z    = 0.0;
+    disc.pose.orientation.w = 1.0;
+    disc.scale.x            = _cfg.robot_radius * 2.0;
+    disc.scale.y            = _cfg.robot_radius * 2.0;
+    disc.scale.z            = 0.1;
+    disc.color.r            = 0.55f;
+    disc.color.g            = 0.55f;
+    disc.color.b            = 0.55f;
+    disc.color.a            = 0.5f;
+    ma.markers.push_back(disc);
+
+    // --- "_OFFLINE" label floating above the disc ------------------------
+    visualization_msgs::msg::Marker label;
+    label.header.frame_id    = "map";
+    label.header.stamp       = now;
+    label.ns                 = state->robot_id;
+    label.id                 = 1;
+    label.type               = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
+    label.action             = visualization_msgs::msg::Marker::ADD;
+    label.pose.position.x    = state->x;
+    label.pose.position.y    = state->y;
+    label.pose.position.z    = 0.6;
+    label.pose.orientation.w = 1.0;
+    label.scale.z            = 0.35;
+    label.color.r            = 0.85f;
+    label.color.g            = 0.85f;
+    label.color.b            = 0.85f;
+    label.color.a            = 1.0f;
+    label.text               = state->robot_id + "\n[OFFLINE]";
+    ma.markers.push_back(label);
+  }
+
+  _marker_pub->publish(ma);
 }
 
 }  // namespace rmf_vda5050_adapter

@@ -76,6 +76,7 @@ public:
   void on_state_update();
 
   void set_update_handle(UpdateHandlePtr handle);
+  void set_online(bool online);
 
 private:
   void send_order(const std::vector<rmf_traffic::agv::Plan::Waypoint>& waypoints);

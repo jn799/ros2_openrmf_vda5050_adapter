@@ -304,6 +304,30 @@ void RobotHandle::send_instant_action(
     payload.c_str(), 1, false);
 }
 
+void RobotHandle::set_online(bool online)
+{
+  std::lock_guard<std::mutex> lock(_mutex);
+  if (!_update_handle)
+    return;
+
+  if (!online)
+  {
+    _update_handle->unstable().decommission();
+    _active_waypoints.clear();
+    _active_node_ids.clear();
+    _done_cb = nullptr;
+    _arrival_est_cb = nullptr;
+    RCLCPP_WARN(_logger, "[%s] went OFFLINE — decommissioned",
+      _state->robot_id.c_str());
+  }
+  else
+  {
+    _update_handle->unstable().recommission();
+    RCLCPP_INFO(_logger, "[%s] back ONLINE — recommissioned",
+      _state->robot_id.c_str());
+  }
+}
+
 std::string RobotHandle::next_order_id()
 {
   // Simple counter-based ID — unique enough for a single-process adapter
