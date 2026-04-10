@@ -93,13 +93,23 @@ echo "source ~/rmf_ws/install/setup.bash" >> ~/.bashrc
 
 ## 6. Start the MQTT Broker
 
-Open a dedicated terminal and run:
+Installing mosquitto via `apt` enables and starts it as a systemd service automatically. Check if it's already running:
 
 ```bash
-mosquitto
+systemctl is-active mosquitto
 ```
 
-Mosquitto listens on `localhost:1883` by default. Leave this terminal running.
+If it shows `active`, you're done — no need to start it manually. If not:
+
+```bash
+sudo systemctl start mosquitto
+```
+
+Mosquitto listens on `localhost:1883` by default. To have it start automatically on every boot:
+
+```bash
+sudo systemctl enable mosquitto
+```
 
 ---
 
@@ -187,7 +197,8 @@ ros2 run rmf_vda5050_adapter dispatch_patrol wp1 wp3 charging wp1 start
 
 | Terminal | Command |
 |---|---|
-| 1 | `mosquitto` |
-| 2 | `ros2 launch rmf_vda5050_adapter rmf_stack.launch.py headless:=false` |
-| 3 | `ros2 run vda5050_mock_robot mock_robot` |
-| 4 | `ros2 run rmf_vda5050_adapter dispatch_patrol <waypoints...>` |
+| 1 | `ros2 launch rmf_vda5050_adapter rmf_stack.launch.py headless:=false` |
+| 2 | `ros2 run vda5050_mock_robot mock_robot` |
+| 3 | `ros2 run rmf_vda5050_adapter dispatch_patrol <waypoints...>` |
+
+> Mosquitto runs as a system service and does not need a dedicated terminal.
