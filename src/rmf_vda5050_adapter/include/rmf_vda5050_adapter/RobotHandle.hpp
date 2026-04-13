@@ -36,6 +36,7 @@ struct RobotState
   std::string last_node_id;
   bool connected{false};
   int order_counter{0};
+  nlohmann::json factsheet;   // last received VDA5050 factsheet (empty if not yet received)
 };
 
 // ---------------------------------------------------------------------------

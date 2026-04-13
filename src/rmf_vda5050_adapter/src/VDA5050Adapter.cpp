@@ -211,9 +211,10 @@ void VDA5050Adapter::on_connect(int rc)
   const std::string base = "uagv/" + _cfg.vda5050_version;
   mosquitto_subscribe(_mqtt, nullptr, (base + "/+/+/state").c_str(), 0);
   mosquitto_subscribe(_mqtt, nullptr, (base + "/+/+/connection").c_str(), 0);
+  mosquitto_subscribe(_mqtt, nullptr, (base + "/+/+/factsheet").c_str(), 0);
 
   RCLCPP_INFO(_logger,
-    "Connected to MQTT broker, subscribed to %s/+/+/{state,connection}",
+    "Connected to MQTT broker, subscribed to %s/+/+/{state,connection,factsheet}",
     base.c_str());
 }
 
@@ -256,6 +257,8 @@ void VDA5050Adapter::on_message(const struct mosquitto_message* msg)
     handle_state_msg(handle, payload);
   else if (kind == "connection")
     handle_connection_msg(handle, payload);
+  else if (kind == "factsheet")
+    handle_factsheet_msg(handle, payload);
 }
 
 void VDA5050Adapter::on_disconnect(int rc)
@@ -459,6 +462,51 @@ void VDA5050Adapter::publish_robot_marker(
   }
 
   _marker_pub->publish(ma);
+}
+
+void VDA5050Adapter::handle_factsheet_msg(
+  const std::shared_ptr<RobotHandle>& handle,
+  const nlohmann::json& payload)
+{
+  std::shared_ptr<RobotState> state;
+  {
+    std::lock_guard<std::mutex> lock(_robots_mutex);
+    for (auto& [id, pair] : _robots)
+    {
+      if (pair.second == handle) { state = pair.first; break; }
+    }
+  }
+  if (!state) return;
+
+  state->factsheet = payload;
+
+  // Log key fields for visibility
+  const std::string series =
+    payload.value("/typeSpecification/seriesName"_json_pointer, std::string("?"));
+  const double speed_max =
+    payload.value("/physicalParameters/speedMax"_json_pointer, -1.0);
+  const double width =
+    payload.value("/physicalParameters/width"_json_pointer, -1.0);
+  const double length =
+    payload.value("/physicalParameters/length"_json_pointer, -1.0);
+
+  RCLCPP_INFO(_logger,
+    "[%s] factsheet received — series='%s', speedMax=%.2f m/s, "
+    "width=%.3f m, length=%.3f m",
+    state->robot_id.c_str(),
+    series.c_str(), speed_max, width, length);
+
+  // Log supported actions at DEBUG level
+  if (payload.contains("protocolFeatures") &&
+      payload["protocolFeatures"].contains("agvActions"))
+  {
+    for (const auto& action : payload["protocolFeatures"]["agvActions"])
+    {
+      RCLCPP_DEBUG(_logger, "[%s] supports action: %s",
+        state->robot_id.c_str(),
+        action.value("actionType", "?").c_str());
+    }
+  }
 }
 
 }  // namespace rmf_vda5050_adapter

@@ -92,6 +92,10 @@ private:
     const std::shared_ptr<RobotHandle>& handle,
     const nlohmann::json& payload);
 
+  void handle_factsheet_msg(
+    const std::shared_ptr<RobotHandle>& handle,
+    const nlohmann::json& payload);
+
   void publish_robot_marker(
     const std::shared_ptr<RobotState>& state, bool offline);
 

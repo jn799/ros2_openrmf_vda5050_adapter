@@ -12,3 +12,17 @@
         index: 0
       shape_context:
         - 0.29999999999999999
+- operation: Add
+  participant_description:
+    name: turtlebot/tb3_01
+    group: vda5050_fleet
+    responsiveness: Responsive
+    profile:
+      footprint:
+        type: Circle
+        index: 0
+      vicinity:
+        type: Circle
+        index: 0
+      shape_context:
+        - 0.29999999999999999

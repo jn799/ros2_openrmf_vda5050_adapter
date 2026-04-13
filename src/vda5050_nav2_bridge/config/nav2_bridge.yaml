@@ -1,0 +1,65 @@
+# VDA5050 Nav2 Bridge Configuration
+#
+# This node bridges VDA5050 orders (from rmf_vda5050_adapter via MQTT) to a
+# Nav2-enabled robot such as TurtleBot3.
+#
+# MAP COORDINATE ALIGNMENT
+# The RMF nav graph (config/nav_graph.yaml) defines waypoints in metres:
+#   start:    (0.0,  0.0)
+#   wp1:      (5.0,  0.0)
+#   wp2:      (10.0, 0.0)
+#   wp3:      (5.0,  5.0)
+#   charging: (5.0,  10.0)
+#
+# The TurtleBot3's map frame must use the same coordinate system.
+# The easiest way: when saving the TB3 map, ensure the robot starts at (0,0)
+# facing the +X direction, or set the map origin in the map YAML accordingly.
+
+vda5050_nav2_bridge:
+  ros__parameters:
+
+    # MQTT broker — must match adapter.yaml
+    mqtt_host: "localhost"
+    mqtt_port: 1883
+    mqtt_username: ""
+    mqtt_password: ""
+
+    # Robot identity — the adapter discovers robots dynamically from MQTT state
+    # messages, so these can be any consistent values. They form the VDA5050
+    # topic: uagv/{vda5050_version}/{manufacturer}/{serial}/...
+    manufacturer: "turtlebot"
+    serial_number: "tb3_01"
+    vda5050_version: "v2"
+
+    # Nav2 action server name (default for TurtleBot3)
+    nav2_action_server: "navigate_to_pose"
+
+    # Topic to read the robot's localized pose from.
+    # /amcl_pose (PoseWithCovarianceStamped) — use when running with a known map.
+    # /odom      (Odometry)                  — odometry only, drifts over time.
+    pose_topic: "/amcl_pose"
+
+    # Map frame used in NavigateToPose goals (must match TurtleBot3's TF tree)
+    map_frame: "map"
+
+    # Tolerance: distance (m) at which a Nav2 goal is considered reached
+    # (Nav2 handles this internally; this is used for state reporting only)
+    goal_tolerance: 0.15
+
+    # How often to publish VDA5050 state back to the adapter (Hz)
+    state_publish_rate: 1.0
+
+    # Timeout waiting for Nav2 action server on startup (seconds)
+    nav2_server_timeout: 10.0
+
+    # ---- Factsheet (published once on connect) --------------------------------
+    # TurtleBot3 Burger defaults — adjust for Waffle or custom hardware.
+    # Dimensions in metres, speeds in m/s, mass in kg.
+    robot_series_name: "TurtleBot3"
+    robot_length: 0.138      # Burger footprint
+    robot_width:  0.178
+    robot_height_max: 0.192
+    robot_speed_max: 0.22    # Burger rated max
+    robot_accel_max: 0.5
+    robot_decel_max: 0.5
+    robot_max_load_mass: 15.0
