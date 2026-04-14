@@ -10,11 +10,17 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
+  <depend>ament_index_cpp</depend>
   <depend>rmf_fleet_adapter</depend>
   <depend>rmf_traffic</depend>
-  <depend>rmf_traffic_ros2</depend>
+  <depend>rmf_battery</depend>
   <depend>nlohmann-json-dev</depend>
+  <depend>eigen</depend>
+  <depend>yaml_cpp_vendor</depend>
   <depend>visualization_msgs</depend>
+  <depend>mosquitto-dev</depend>
+
+  <exec_depend>rmf_traffic_ros2</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
